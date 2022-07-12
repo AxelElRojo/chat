@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chat</title>
+	<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+		rel="stylesheet"
+		integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+		crossorigin="anonymous"
+	/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+		rel="stylesheet"
+		integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+		crossorigin="anonymous"
+		referrerpolicy="no-referrer"
+	/>
+</head>
+<body class="bg-dark text-white">
+	<div class="container mt-5" id="screen">
+		<div class="container d-flex flex-column" id="messagebox"></div>
+		<hr/>
+		<form class="w-75 input-group mb-3 m-auto" onsubmit="event.preventDefault(); sendMessage();">
+			<input type="text" class="form-control" placeholder="Username" id="user" required/>
+			<input type="text" class="form-control w-50" placeholder="Write a message" id="message" required/>
+			<button type="submit" class="btn btn-primary">Send</button>
+		</form>
+	</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+	crossorigin="anonymous">
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+	integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+	crossorigin="anonymous">
+</script>
+<script>
+	const ws_port = '<%- process.env.PORT %>';
+	const socket = new WebSocket(`ws://${window.location.hostname}:${ws_port}/`);
+	socket.addEventListener('message', (data) => {
+		var msg = JSON.parse(data.data);
+		if(msg.from != $('#user').val())
+			appendMsg(msg, true);
+	});
+	function sendMessage(){
+		const user = $("#user").val(), message = $("#message").val();
+		$("#message").val("");
+		$("#user").attr("readonly", true);
+		var date = new Date();
+		var year = (date.getFullYear()-2000);
+		var month = ((date.getMonth()+1) < 10 ? '0' + (date.getMonth()+1) : (date.getMonth()+1));
+		var day = (date.getDay() < 10 ? '0' + date.getDay() : date.getDay());
+		var hour = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours());
+		var minute = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
+		var msg = {
+			from: user,
+			text: message,
+			time: `${year}/${month}/${day} ${hour}:${minute}`
+		};
+		appendMsg(msg, false);
+		socket.send(JSON.stringify(msg));
+	}
+	function appendMsg(msg, other){
+		var container = $("<div></div>");
+		if(other)
+			container.addClass("w-50 mt-1 bg-secondary p-1 rounded align-self-start");
+		else
+			container.addClass("w-50 mt-1 text-black bg-info p-1 rounded align-self-end");
+		container.append($("<p></p>").text(msg.text));
+		container.append($("<small></small>").text(msg.from + ' ' + msg.time));
+		$("#messagebox").append(container);
+	}
+</script>
+</html>
