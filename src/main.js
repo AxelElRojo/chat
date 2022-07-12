@@ -21,7 +21,6 @@ const wsSrv = new WebSocketServer({
 	server: httpSrv
 });
 
-app.use(express.json());
 app.use('/', express.static(path.join(__dirname, "public")));
 app.get('/', (req, res) => {
 	ejs.renderFile(path.join(__dirname, "views", "index.ejs"), (err, str) => {
@@ -34,13 +33,11 @@ app.get('/', (req, res) => {
 
 wsSrv.on("connection", (ws) => {
 	ws.on("message", (msg) => {
-		wsSrv.clients.forEach((client) => {
-			client.send(msg.toString());
-		});
+		wsSrv.emit(msg.toString());
 	});
 });
 httpSrv.on("request", app);
 
-const listener = httpSrv.listen(process.env.PORT, () => {
-	console.log("Listening on " + listener.address().address + listener.address().port);
+httpSrv.listen(process.env.PORT, () => {
+	console.log(`Listening on ${httpSrv.address().address}${httpSrv.address().port}`);
 });
