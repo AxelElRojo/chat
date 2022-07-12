@@ -7,6 +7,7 @@ Technologies used:
 * ExpressJS
 * WebSockets
 * Bootstrap
+* JQuery
 
 ## Installing
 If (for some reason), you want to try this, just download the repo, and inside the directory, run the following:
