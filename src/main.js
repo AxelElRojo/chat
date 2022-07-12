@@ -33,7 +33,10 @@ app.get('/', (req, res) => {
 
 wsSrv.on("connection", (ws) => {
 	ws.on("message", (msg) => {
-		wsSrv.emit(msg.toString());
+		wsSrv.clients.forEach((client) => {
+			if(client !== ws)
+				client.send(msg.toString());
+		});
 	});
 });
 httpSrv.on("request", app);
